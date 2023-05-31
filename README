@@ -1,0 +1,53 @@
+
+-------------------------------------------
+C. elegans m6A methylation analysis worflow
+-------------------------------------------
+
+- Author: Csaba Kerepesi, SZTAKI, Budapest, Hungary
+- Info/request: kerepesi@sztaki.hu
+
+WORKFLOW STEPS:
+
+1. m6A D1 context fasta:
+    $ python merged_m6A_contexts_to_fasta.py > n2d1_m6A_context.fa
+        - input:
+            BAM_d1/D01_HKPBCELhkaDAAAMWGAAPEI-4.bam-pbalign.bam-ipdSummary-minCov1.gff
+            BAM_d1/E01_HKPBCELhkaDAAAMWGAAPEI-4.bam-pbalign.bam-ipdSummary-minCov1.gff
+            
+2. m6A D5 context fasta:
+    $ python m6A_contexts_to_fasta.py > d5-m6A_contexts_to_fasta.py.fa
+        - input: BAM_d1/m54282_200107_024536.subreads.bam-pbalign.bam-ipdSummary-minCoverage1.gff
+        - output: d5-m6A_contexts_to_fasta.py.fa
+
+3. m6A cdna:
+    $ python CountByPos-cdna.py n2d1_m6A_context.fa > n2d1_m6A_context.fa-CountByPos-cdna.py.csv
+        - additional input: Caenorhabditis_elegans.WBcel235.cdna.all.fa
+    $ python CountByPos-cdna.py d5-m6A_contexts_to_fasta.py.fa > d5-m6A_contexts_to_fasta.py.fa-CountByPos-cdna.py.csv 
+        - additional input: Caenorhabditis_elegans.WBcel235.cdna.all.fa
+
+4. m6A repeats:
+    $ python CountByPos-TE.py n2d1_m6A_context.fa > n2d1_m6A_context.fa-CountByPos-TE.py.csv
+        - additional input: ce10_dfam.nrph.hits
+    $ python CountByPos-TE.py d5-m6A_contexts_to_fasta.py.fa > d5-m6A_contexts_to_fasta.py.fa-CountByPos-TE.py.csv
+        - additional input: ce10_dfam.nrph.hits
+
+5. m6A repeat groups:
+    $ python RepeatGroups.py n2d1_m6A_context.fa-CountByPos-TE.py.csv > n2d1_m6A_context.fa-CountByPos-TE.py.csv-RepeatGroups.py.csv
+    $ python RepeatGroups.py d5-m6A_contexts_to_fasta.py.fa-CountByPos-TE.py.csv > d5-m6A_contexts_to_fasta.py.fa-CountByPos-TE.py.csv-RepeatGroups.py.csv
+
+6. Run GenMethylationTables_d1_vs_d5.ipynb
+    - input:    
+        n2d1_m6A_context.fa-CountByPos-cdna.py.csv
+        d5-m6A_contexts_to_fasta.py.fa-CountByPos-cdna.py.csv
+    - output:
+        m6A_cdna_d1_vs_d5.xlsx
+    - input:
+        n2d1_m6A_context.fa-CountByPos-TE.py.csv
+        d5-m6A_contexts_to_fasta.py.fa-CountByPos-TE.py.csv
+    - output: 
+        m6A_Repeats_d1_vs_d5.xlsx
+    - input:
+        n2d1_m6A_context.fa-CountByPos-TE.py.csv-RepeatGroups.py.csv
+        d5-m6A_contexts_to_fasta.py.fa-CountByPos-TE.py.csv-RepeatGroups.py.csv
+    - output:
+        m6A_Repeat_groups_d1_vs_d5.xlsx
